@@ -3,26 +3,41 @@ from mechanize import Browser;  # for making requests
 from bs4 import BeautifulSoup;  # for parsing html
 
 """
-@return a list of json courses
+Get a list of courses from the catalog
 @param url: the basename url to the catalog for a course
 @param catoid: the catalog id
 @param coid_begin: the course id for the first course in the catalog
 @param coid_end: the course id for the last course in the catalog
+@return a list of json courses
 """
 def web_parse(url, catoid, coid_begin, coid_end):
     courses = []
     coid = coid_begin
-    bro = Browser();            # unintuitivly, this is a different browser than the one in main
     while coid <= coid_end:
-        connect_nofail(bro,url+"?catoid="+catoid+"&coid="+coid) # connect to a course page
-        
+        html = request_course(url+"?catoid="+catoid+"&coid="+coid)
+        course = process_request(html)
+        if course:
+            courses.append(course)
         coid += 1;
+    return courses
         
 """
 @returns a course json
+
 """
-def request_course(url, catoid, coid):
+def request_course(url):
+    bro = Browser();            # again a different one
+    connect_nofafil(bro,) # connect to a course page
+
     # TODO: Visakh
+
+"""
+get the course information from the html page
+
+"""
+def process_request(html):
+    # TODO: beautiful soup probably
+    
 
 """
 connects to a page. if connection times out, rety indefinitly
@@ -39,7 +54,6 @@ def connect_nofail(bro, url):
         except:
             print("retrying")
 
-    
 ### Main ###
 """
 get any user input and get initial information like the last course id
