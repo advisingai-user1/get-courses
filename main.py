@@ -2,6 +2,12 @@
 from mechanize import Browser;  # for making requests
 from bs4 import BeautifulSoup;  # for parsing html
 
+# this is the global browser for this program
+bro = Browser();
+bro.set_handle_robots(False)
+bro.set_handle_refresh(False)
+bro.set_cookiejar(None)
+
 """
 Get a list of courses from the catalog
 @param url: the basename url to the catalog for a course
@@ -14,25 +20,16 @@ def web_parse(url, catoid, coid_begin, coid_end):
     courses = []
     coid = coid_begin
     while coid <= coid_end:
-        html = request_course(url+"?catoid="+str(catoid)+"&coid="+str(coid))
+        html = bro.open(url+"?catoid="+str(catoid)+"&coid="+str(coid)).get_data()
         course = process_request(html)
         if course:
             courses.append(course)
-        coid += 1;
+        coid += 1
     return courses
-        
-"""
-@returns a course json
-
-"""
-def request_course(url):
-    bro = Browser();            # again a different one
-    connect_nofail(bro,) # connect to a course page
-
 
 """
 get the course information from the html page
-
+@return a course json
 """
 def process_request(html):
     # TODO: beautiful soup probably
@@ -40,11 +37,11 @@ def process_request(html):
     
 
 """
-connects to a page. if connection times out, rety indefinitly
+connect to a page. if connection times out, rety indefinitly
 @param bro: the mechanize browser object
 @param url: the url to connect to 
 """
-def connect_nofail(bro, url):
+def connect_nofail(url):
     # never fail to access the link
     connected = False
     while not connected:
@@ -66,18 +63,15 @@ def main():
     ### find the last courses id
     coid_begin = 144004         # hopefuly this stays the same forever
     coid_end = 0;               # will set later
-    bro = Browser();
-    bro.set_handle_robots(False)
-    bro.set_handle_refresh(False)
-    bro.set_cookiejar(None) 
-    connect_nofail(bro, smu_cat_url)
+     
+    connect_nofail(smu_cat_url)
     # find the link to get to the last page of courses
     links = list(bro.links())
     for i in range(len(links)-1, 0, -1):
         text = links[i].text
         if(text == "Forward 10"):
             # the link after this one is the link to the last page
-            connect_nofail(bro, links[i+1].url) # we are going to the last page
+            connect_nofail(links[i+1].url) # we are going to the last page
             break
     # now being on the last page of courses, we can start from the back again and find the last course
     links = list(bro.links())
@@ -93,6 +87,6 @@ def main():
     courses = web_parse("https://catalog.smu.edu/preview_course_nopop.php", catoid, coid_begin, coid_end)
     # I guess we just print them out for now
     print(courses);
-    
+
 if __name__ == '__main__':
     main()
