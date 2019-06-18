@@ -20,11 +20,13 @@ def web_parse(url, catoid, coid_begin, coid_end):
     courses = []
     coid = coid_begin
     while coid <= coid_end:
+        # get html
         html = bro.open(url+"?catoid="+str(catoid)+"&coid="+str(coid)).get_data()
+        # leech the course information from the html
         course = process_request(html)
-        if course:
-            courses.append(course)
-        coid += 1
+        if course:                 # if it was a course page
+            courses.append(course) # add the course
+        coid += 1                  # go the the next course page
     return courses
 
 """
